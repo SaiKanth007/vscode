@@ -983,6 +983,49 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 		}
 	}
 
+	async queryMLModelForRecommendations(installedExtensionIds: string[], token: CancellationToken): Promise<string[]> {
+		if (!this.isEnabled()) {
+			throw new Error('No extension gallery service configured.');
+		}
+
+		const commonHeaders = await this.commonHeadersPromise;
+		const headers = {
+			...commonHeaders,
+			'Content-Type': 'application/json',
+			'Accept': 'application/json;api-version=3.0-preview.1',
+			'Accept-Encoding': 'gzip',
+			'Access-Control-Allow-Origin': '*',
+			'Origin': 'vscode-file://vscode-app',
+			'sec-fetch-mode': 'cors',
+			'sec-fetch-site': 'cross-site'
+		};
+
+		let context: IRequestContext | undefined;
+
+		const MLModelURL = "http://localhost:5000/recommend?ext=" + installedExtensionIds.join(',');
+
+		try {
+			context = await this.requestService.request({
+				type: 'GET',
+				url: MLModelURL,
+				headers
+			}, token);
+
+			if (context.res.statusCode && context.res.statusCode >= 400 && context.res.statusCode < 500) {
+				return [];
+			}
+
+			const recommendedExtensions = await asJson<string[]>(context);
+			if (recommendedExtensions) {
+				return recommendedExtensions;
+			}
+			return [];
+
+		} catch (e) {
+			throw e;
+		}
+	}
+
 	async reportStatistic(publisher: string, name: string, version: string, type: StatisticType): Promise<void> {
 		if (!this.isEnabled()) {
 			return undefined;

@@ -895,6 +895,14 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 		}
 	}
 
+	async queryMLModelForRecommendations(installedExtensionIds: string[], token: CancellationToken): Promise<string[]> {
+		try {
+			return this.galleryService.queryMLModelForRecommendations(installedExtensionIds, token);
+		} catch (error) {
+			throw error;
+		}
+	}
+
 	getExtensions(extensionInfos: IExtensionInfo[], token: CancellationToken): Promise<IExtension[]>;
 	getExtensions(extensionInfos: IExtensionInfo[], options: IExtensionQueryOptions, token: CancellationToken): Promise<IExtension[]>;
 	async getExtensions(extensionInfos: IExtensionInfo[], arg1: any, arg2?: any): Promise<IExtension[]> {

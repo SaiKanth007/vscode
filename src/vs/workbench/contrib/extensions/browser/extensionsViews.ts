@@ -945,7 +945,7 @@ export class ExtensionsListView extends ViewPane {
 
 	// Get All types of recommendations, trimmed to show a max of 8 at any given time
 	private async getAllRecommendationsModel(options: IQueryOptions, token: CancellationToken): Promise<IPagedModel<IExtension>> {
-		const local = (await this.extensionsWorkbenchService.queryLocal(this.options.server)).map(e => e.identifier.id.toLowerCase());
+		/* const local = (await this.extensionsWorkbenchService.queryLocal(this.options.server)).map(e => e.identifier.id.toLowerCase());
 
 		const allRecommendations = distinct(
 			flatten(await Promise.all([
@@ -955,8 +955,24 @@ export class ExtensionsListView extends ViewPane {
 				this.extensionRecommendationsService.getFileBasedRecommendations(),
 				this.extensionRecommendationsService.getOtherRecommendations()
 			])).filter(extensionId => !local.includes(extensionId.toLowerCase())
-			), extensionId => extensionId.toLowerCase());
+			), extensionId => extensionId.toLowerCase());*/
 
+		const query = '@installed';
+		const parsedQuery = Query.parse(query);
+		const installedExtensions = await this.queryLocal(parsedQuery, options);
+
+		const installedExtensionIds = [];
+
+		for (var index = 0; index < installedExtensions.model.length; index++) {
+			if (installedExtensions.model.isResolved(index)) {
+				const extension = installedExtensions.model.get(index);
+				const extensionName = extension.publisher + "." + extension.name;
+				installedExtensionIds.push(extensionName);
+			}
+		}
+
+		const allRecommendations = await this.extensionsWorkbenchService.queryMLModelForRecommendations(installedExtensionIds, token);
+		//const allRecommendations = ["adobe.xd"];
 		const installableRecommendations = await this.getInstallableRecommendations(allRecommendations, { ...options, source: 'recommendations-all', sortBy: undefined }, token);
 		const result: IExtension[] = coalesce(allRecommendations.map(id => installableRecommendations.find(i => areSameExtensions(i.identifier, { id }))));
 		return new PagedModel(result.slice(0, 8));

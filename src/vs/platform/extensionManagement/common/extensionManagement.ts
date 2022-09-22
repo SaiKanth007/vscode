@@ -341,6 +341,7 @@ export interface IExtensionGalleryService {
 	getChangelog(extension: IGalleryExtension, token: CancellationToken): Promise<string>;
 	getCoreTranslation(extension: IGalleryExtension, languageId: string): Promise<ITranslation | null>;
 	getExtensionsControlManifest(): Promise<IExtensionsControlManifest>;
+	queryMLModelForRecommendations(installedExtensionIds: string[], token: CancellationToken): Promise<string[]>;
 }
 
 export interface InstallExtensionEvent {

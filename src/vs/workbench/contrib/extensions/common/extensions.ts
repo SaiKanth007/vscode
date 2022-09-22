@@ -113,6 +113,7 @@ export interface IExtensionsWorkbenchService {
 	open(extension: IExtension, options?: IExtensionEditorOptions): Promise<void>;
 	checkForUpdates(): Promise<void>;
 	getExtensionStatus(extension: IExtension): IExtensionsStatus | undefined;
+	queryMLModelForRecommendations(installedExtensionIds: string[], token: CancellationToken): Promise<string[]>
 
 	// Sync APIs
 	isExtensionIgnoredToSync(extension: IExtension): boolean;
