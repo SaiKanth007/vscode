@@ -995,13 +995,12 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 			'Accept': 'application/json;api-version=3.0-preview.1',
 			'Accept-Encoding': 'gzip',
 			'Access-Control-Allow-Origin': '*',
-			'Origin': 'vscode-file://vscode-app',
-			'sec-fetch-mode': 'cors',
-			'sec-fetch-site': 'cross-site'
+			'Content-Security-Policy': 'default-src * \'unsafe-inline\' \'unsafe-eval\'; script-src * \'unsafe-inline\' \'unsafe-eval\'; connect-src * \'unsafe-inline\'; img-src * data: blob: \'unsafe-inline\'; frame-src *; style-src * \'unsafe-inline\';			'
 		};
 
 		let context: IRequestContext | undefined;
 
+		//const MLModelURL = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/moalamri/extensions/inline-fold/reviews?count=10&filterOptions=3"
 		const MLModelURL = "http://localhost:5000/recommend?ext=" + installedExtensionIds.join(',');
 
 		try {

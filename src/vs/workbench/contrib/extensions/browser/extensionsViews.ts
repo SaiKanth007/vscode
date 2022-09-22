@@ -945,17 +945,7 @@ export class ExtensionsListView extends ViewPane {
 
 	// Get All types of recommendations, trimmed to show a max of 8 at any given time
 	private async getAllRecommendationsModel(options: IQueryOptions, token: CancellationToken): Promise<IPagedModel<IExtension>> {
-		/* const local = (await this.extensionsWorkbenchService.queryLocal(this.options.server)).map(e => e.identifier.id.toLowerCase());
-
-		const allRecommendations = distinct(
-			flatten(await Promise.all([
-				// Order is important
-				this.getWorkspaceRecommendations(),
-				this.extensionRecommendationsService.getImportantRecommendations(),
-				this.extensionRecommendationsService.getFileBasedRecommendations(),
-				this.extensionRecommendationsService.getOtherRecommendations()
-			])).filter(extensionId => !local.includes(extensionId.toLowerCase())
-			), extensionId => extensionId.toLowerCase());*/
+		const local = (await this.extensionsWorkbenchService.queryLocal(this.options.server)).map(e => e.identifier.id.toLowerCase());
 
 		const query = '@installed';
 		const parsedQuery = Query.parse(query);
@@ -971,11 +961,30 @@ export class ExtensionsListView extends ViewPane {
 			}
 		}
 
-		const allRecommendations = await this.extensionsWorkbenchService.queryMLModelForRecommendations(installedExtensionIds, token);
-		//const allRecommendations = ["adobe.xd"];
+		const allRecommendations = await this.GetExtensionRecommendationsIds(installedExtensionIds, local, token);
+
 		const installableRecommendations = await this.getInstallableRecommendations(allRecommendations, { ...options, source: 'recommendations-all', sortBy: undefined }, token);
 		const result: IExtension[] = coalesce(allRecommendations.map(id => installableRecommendations.find(i => areSameExtensions(i.identifier, { id }))));
 		return new PagedModel(result.slice(0, 8));
+	}
+
+	private async GetExtensionRecommendationsIds(installedExtensionIds: string[], local: string[], token: CancellationToken): Promise<string[]> {
+		if (installedExtensionIds.length == 0) {
+			return distinct(
+				flatten(await Promise.all([
+					// Order is important
+					this.getWorkspaceRecommendations(),
+					this.extensionRecommendationsService.getImportantRecommendations(),
+					this.extensionRecommendationsService.getFileBasedRecommendations(),
+					this.extensionRecommendationsService.getOtherRecommendations()
+				])).filter(extensionId => !local.includes(extensionId.toLowerCase())
+				), extensionId => extensionId.toLowerCase());
+		}
+		else {
+			const allRecommendations = await this.extensionsWorkbenchService.queryMLModelForRecommendations(installedExtensionIds, token);
+			return allRecommendations;
+		}
+
 	}
 
 	private async searchRecommendations(query: Query, options: IQueryOptions, token: CancellationToken): Promise<IPagedModel<IExtension>> {
